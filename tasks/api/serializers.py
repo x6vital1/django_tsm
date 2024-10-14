@@ -2,7 +2,6 @@ from rest_framework import serializers
 from tasks.models import Tasks
 from users.api.serializers import CustomUserSerializer, UserProfileSerializer
 from users.models import UserProfile, CustomUser
-from tasks.reminders import send_reminders, send_created_notification
 
 
 class TasksSerializer(serializers.ModelSerializer):
