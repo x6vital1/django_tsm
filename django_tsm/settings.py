@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
+
+from celery.bin.worker import CELERY_BEAT
 from dotenv import load_dotenv
 import os
 
@@ -25,7 +28,6 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-c#c+66+7g+imt6+2dy3ze1-m1m#iy8aa%njnb=j%gb2r4bo$)w'
-
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -64,6 +66,12 @@ REST_FRAMEWORK = {
 
 CELERY_BROKER_URL = 'amqp://guest:guest@localhost//'
 CELERY_RESULT_BACKEND = 'django-db'
+CELERY_BEAT_SCHEDULE = {
+    'check_task_deadline': {
+        'task': 'tasks.tasks.check_deadlines',
+        'schedule': crontab(minute='*/5'),
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

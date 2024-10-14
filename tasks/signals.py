@@ -1,12 +1,12 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from tasks.reminders import send_reminders, send_created_notification
 
 from tasks.models import Tasks
+from users.utils.notification_utils import TasksNotificationSender
 
 
 @receiver(post_save, sender=Tasks)
 def send_task_notification(sender, instance, created, **kwargs):
     if created:
-        send_created_notification(instance)
-        send_reminders(instance)
+        TasksNotificationSender(instance).create_notification()
+        TasksNotificationSender(instance).deadline_reminders()

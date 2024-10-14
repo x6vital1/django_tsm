@@ -4,6 +4,8 @@ from django.utils import timezone
 from users.models import CustomUser, UserProfile
 from utils.models import CreateUpdateTracker, nb, GetOrNoneManager
 
+from users.utils.damage_calculator import DefaultDamageCalculator
+
 
 class Tasks(CreateUpdateTracker):
     title = models.CharField(max_length=255, **nb)
@@ -18,8 +20,18 @@ class Tasks(CreateUpdateTracker):
         (DIFFICULTY_HARD, 'Hard'),
     )
 
+    STATUS_COMPLETED = 'completed'
+    STATUS_PENDING = 'pending'
+    STATUS_EXPIRED = 'expired'
+    STATUS_CHOICES = (
+        (STATUS_COMPLETED, 'Completed'),
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_EXPIRED, 'Expired'),
+    )
+
     difficulty = models.IntegerField(choices=DIFFICULTY_CHOICES, **nb)
     deadline = models.DateTimeField(**nb)
+    status = models.CharField(choices=STATUS_CHOICES, default=STATUS_PENDING, max_length=30, **nb)
     completed = models.BooleanField(default=False)
 
     objects = GetOrNoneManager()
@@ -32,7 +44,7 @@ class Tasks(CreateUpdateTracker):
         self.user.exp_points += self.difficulty
         self.user.save()
 
-    def miss_deadline(self):
-        if not self.completed and self.deadline and self.deadline < timezone.now():
-            self.user.reduce_health_points(self.difficulty)
-            self.user.save()
+    def miss_deadline(self, damage):
+        if not self.completed:
+            self.user.userprofile.reduce_health_points(damage)
+
