@@ -18,6 +18,14 @@ class UserProfile(models.Model):
     def reduce_health_points(self, points):
         self.health_points -= points
         self.save()
+        if self.health_points <= 0:
+            self.reset_user()
+
+    def reset_user(self):
+        self.health_points = 100
+        self.exp_points = 0
+        self.level = 0
+        self.save()
 
     def check_level_up(self):
         if self.exp_points >= 100:
